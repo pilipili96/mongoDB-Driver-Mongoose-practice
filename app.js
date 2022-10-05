@@ -1,67 +1,124 @@
-// mongoDB Native Driver example
+    //require the Mongoose package (after running >npm i mongoose in Hyper to install it)
+    const mongoose = require('mongoose');
+     
+    //connect to MongoDB by specifying port to access MongoDB server
+    main().catch(err => console.log(err));
+     
+    async function main() {
+      await mongoose.connect('mongodb://localhost:27017/FruitsDB');
+      }
+     
+    //create a SCHEMA that sets out the fields each document will have and their datatypes
+    const fruitSchema = new mongoose.Schema ({
+    	name: {
+        type :String,
+        required: [true, "Add name"],
+      },
+    	rating: {
+        type: Number,
+        min: 1,
+        max: 10
+      },
+    	review: String
+    })
+     
+    // //create a MODEL
+    const Fruit = new mongoose.model ("Fruit", fruitSchema);
+     
+    //create a DOCUMENT
+    const fruit = new Fruit ({
+    	rating: 7,
+    	review: "Incredible!"
+    })
+     
+    // //save the document
+    // fruit.save()
+     
+    //**CHALLENGE: Set up a people database with one document and two fields**//
+    //create a SCHEMA
+    const personSchema = new mongoose.Schema({
+      name: String,
+      age: Number,
+      favoriteFruit: fruitSchema
+    });
+      const pineapple = new Fruit({
+        name: "Pineapple",
+        score: 8,
+        review: "Sick"
+      })
+      // pineapple.save();
+    //create a MODEL
+    const Person = mongoose.model('Person', personSchema);
 
-const { MongoClient } = require("mongodb");
- 
-// Connection URI
-const uri = "mongodb://0.0.0.0:27017/";
- 
-// Create a new MongoClient
-const client = new MongoClient(uri);
- 
-// Database Name
-const dbName = "fruitsDB";
- 
-async function run() {
-  try {
-    // Connect the client to the server
-    await client.connect();
- 
-    // Establish and verify connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Connected successfully to server");
-    //creating collection
-    const database = client.db(dbName);
-    const fruits = database.collection("fruits");
- 
-    // create an array of documents to insert
-    const doc =
-    [   
-        {
-            name:"Apple",
-            score : 8,
-            review: "Great fruit"
-        },
-        {
-            name:"Orange",
-            score : 5,
-            review: "Kind a sour"
-        },
-    
-    ]
-    // this option prevents additional documents from being inserted if one fails
-    const options = { ordered: true };
- 
-    const result = await fruits.insertMany(doc);
-    console.log(`${result.insertedCount} documents were inserted`);
- 
-    // Reading from collections
- 
- 
-    // you can add query also option if you want to read spcific data like in this case read only thosewhich have scoe of 8
-    // const query = {score:8};
-    const cursor = fruits.find(); // reads all data
-    // print a message if no documents were found
-    if ((await cursor.countDocuments) === 0) {
-      console.log("No documents found!");
-    }
-    // replace console.dir with your callbnodeack to access individual elements
-    await cursor.forEach(console.dir);
- 
- 
- 
-  } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
+
+     
+    //create a DOCUMENT
+    const person = new Person({
+      name: "Amy",
+      age: 12,
+      favoriteFruit: pineapple
+    });
+     
+    //Save it
+    // person.save();
+
+    const kiwi = new Fruit ({
+    	name: "Kiwi",
+    	rating: 7,
+    	review: "Nice!"
+    });
+    const banana = new Fruit ({
+    	name: "Banana",
+    	rating: 4,
+    	review: "Wow!"
+    });
+    const orange = new Fruit ({
+    	name: "Orange",
+    	rating: 6,
+    	review: "Amazing!"
+    });
+
+// Fruit.insertMany([kiwi, banana, orange], (err) => {
+//   if (err) {console.log(err)}
+//   else{console.log("successs")}
+// });
+
+Fruit.find(function(err, fruits){
+  if (err){
+    console.log(err);
+  }else{
+    mongoose.connection.close();
+    fruits.forEach((fruit) => console.log(fruit.name))
   }
-}
-run().catch(console.dir);
+});
+
+Fruit.updateOne({_id:"633ce04fdee7fdf79c6920d0"}, {name: "Peach"}, function(err){
+  if (err){
+    console.log(err)
+  }else{
+    console.log("Updated successfully")
+  }
+});
+
+Fruit.deleteOne({_id: "633ce04fdee7fdf79c6920d0"}, function (err){
+  if (err){
+    console.log(err)
+  }else{
+    console.log("Deleted successfully")
+  }
+});
+
+Person.deleteMany({name: "John"},function (err){
+  if (err){
+        console.log(err)
+      } else{
+        console.log("Deleted successfully")
+      };
+});
+Person.updateOne({name:"John"}, {favoriteFruit: kiwi}, function(err){
+  if (err){
+    console.log(err)
+  }else{
+    console.log("Updated John successfully")
+  }
+});
